@@ -6,10 +6,43 @@ from PIL import Image
 import io
 import requests
 from datetime import datetime
+import os
 
-# Load the trained models
-soil_model = tf.keras.models.load_model("soil_model.keras")
-disease_model = tf.keras.models.load_model("plant_disease.keras")
+# Direct Hugging Face URLs
+SOIL_MODEL_URL = "https://huggingface.co/kuraeswar2005/soilmodel/resolve/main/soil_model.keras"
+DISEASE_MODEL_URL = "https://huggingface.co/kuraeswar2005/plant_disease/resolve/main/plant_disease.keras"
+
+# Local cache directory for models
+MODEL_DIR = "./models"
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+try:
+    print(f"⬇️ Streaming model from: {SOIL_MODEL_URL}")
+    soil_model_path = tf.keras.utils.get_file(
+        fname="soil_model.keras",
+        origin=SOIL_MODEL_URL,
+        cache_dir=MODEL_DIR,
+        cache_subdir="."
+    )
+
+    print(f"⬇️ Streaming model from: {DISEASE_MODEL_URL}")
+    disease_model_path = tf.keras.utils.get_file(
+        fname="plant_disease.keras",
+        origin=DISEASE_MODEL_URL,
+        cache_dir=MODEL_DIR,
+        cache_subdir="."
+    )
+
+    soil_model = tf.keras.models.load_model(soil_model_path)
+    disease_model = tf.keras.models.load_model(disease_model_path)
+
+    print("✅ Models loaded successfully!")
+
+except Exception as e:
+    print(f"❌ Error loading models: {e}")
+    soil_model = None
+    disease_model = None
+
 
 # Soil type class labels
 SOIL_CLASS_LABELS = {
